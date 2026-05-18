@@ -1,0 +1,56 @@
+package controllers;
+
+import dao.AuthDAO;
+import entities.LoginDTO;
+import entities.NovaSenhaDTO;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+
+@Path("/auth")
+@Produces(MediaType.APPLICATION_JSON)
+@Consumes(MediaType.APPLICATION_JSON)
+
+public class AuthResource {
+    private AuthDAO dao = new AuthDAO();
+
+    @POST
+    @Path("/create-password")
+    public Response criarSenha(NovaSenhaDTO dados) {
+        try {
+            dao.criarSenha(dados.getToken(), dados.getPassword());
+            return Response.status(Response.Status.CREATED).entity("Senha salva com sucesso.").build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("Erro: " + e.getMessage()).build();
+        }
+    }
+
+    @OPTIONS
+    @Path("/create-password")
+    public Response preflight() {
+        return Response.ok().build();
+    }
+
+    @POST
+    @Path("/login")
+    public Response logar(LoginDTO dados) {
+        try {
+            String resultado = dao.fazerLogin(dados.getEmail(), dados.getSenha());
+
+            if (resultado.equals("INVALIDO")) {
+                return Response.status(Response.Status.UNAUTHORIZED).entity("E-mail ou senha incorretos.").build();
+            }
+            return Response.ok("{\"tipoAcesso\": \"" + resultado + "\"}").build();
+
+        } catch (Exception e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
+        }
+    }
+
+    @OPTIONS
+    @Path("/login")
+    public Response preflightLogin() {
+        return Response.ok().build();
+    }
+}
