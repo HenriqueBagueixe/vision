@@ -35,13 +35,14 @@ public class PacienteResource {
             double rendaBruta = novoPaciente.getRendaBrutaTotal() > 0 ? novoPaciente.getRendaBrutaTotal() : 3000.00;
             int membrosFamilia = 1;
             int gravidade = 5;
-            novoPaciente.setIdHistorico(1);
+            //novoPaciente.setIdHistorico(1);
 
             service.cadastrarEProcessarPaciente(novoPaciente, rendaBruta, membrosFamilia, gravidade);
             return Response.status(Response.Status.CREATED).entity(novoPaciente).build();
         } catch (IllegalArgumentException e) {
             return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
         } catch (Exception e) {
+            e.printStackTrace();
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Erro no servidor: " + e.getMessage()).build();
         }
     }
@@ -66,6 +67,7 @@ public class PacienteResource {
             dao.atualizar(pacienteAtualizado);
             return Response.ok(pacienteAtualizado).build();
         } catch (Exception e) {
+            e.printStackTrace();
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Erro ao atualizar: " + e.getMessage()).build();
         }
     }
@@ -82,6 +84,7 @@ public class PacienteResource {
             dao.delete(id);
             return Response.noContent().build();
         } catch (Exception e) {
+            e.printStackTrace();
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Erro ao deletar: " + e.getMessage()).build();
         }
     }
@@ -94,6 +97,7 @@ public class PacienteResource {
             dao.AgendaDAO dao = new dao.AgendaDAO();
             return Response.ok(dao.buscarAgendaGeralAdmin()).build();
         } catch (Exception e) {
+            e.printStackTrace();
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
         }
     }
@@ -108,8 +112,53 @@ public class PacienteResource {
             java.util.List<dto.PacientePainelDTO> pacientes = dao.listarPacientesPainelAdmin();
             return Response.ok(pacientes).build();
         } catch (Exception e) {
+            e.printStackTrace();
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                     .entity("Erro ao processar dados do painel: " + e.getMessage()).build();
         }
+    }
+
+    @PUT
+    @Path("/{idAtendimento}/atribuir-medico/{idMedico}")
+    public Response atribuirDentista(@PathParam("idAtendimento") int idAtendimento, @PathParam("idMedico") int idMedico) {
+        try {
+            dao.atribuirMedico(idAtendimento, idMedico);
+            return Response.ok("Dentista atribuído com sucesso.").build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Erro ao atribuir dentista: " + e.getMessage()).build();
+        }
+    }
+
+    @PUT
+    @Path("/{idAtendimento}/marcar-consulta")
+    public Response marcarConsulta(@PathParam("idAtendimento") int idAtendimento, java.util.Map<String, String> payload) {
+        try {
+            String dataHora = payload.get("dataHora");
+            if (dataHora == null || dataHora.isEmpty()) {
+                return Response.status(Response.Status.BAD_REQUEST).entity("Data e hora não fornecidas.").build();
+            }
+
+            dao.marcarConsulta(idAtendimento, dataHora);
+            return Response.ok("Consulta agendada com sucesso.").build();
+        } catch (Exception e) {
+            e.printStackTrace(); // Isso vai imprimir o ERRO REAL no terminal do seu IntelliJ
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Erro ao agendar consulta: " + e.getMessage())
+                    .header("Access-Control-Allow-Origin", "*")
+                    .header("Access-Control-Allow-Methods", "PUT, OPTIONS")
+                    .build();
+        }
+    }
+
+    @OPTIONS
+    @Path("/{idAtendimento}/marcar-consulta")
+    public Response preflightMarcarConsulta() {
+        return Response.ok()
+                .header("Access-Control-Allow-Origin", "*")
+                .header("Access-Control-Allow-Methods", "PUT, OPTIONS")
+                .header("Access-Control-Allow-Headers", "accept, authorization, content-type, x-requested-with")
+                .build();
     }
 }

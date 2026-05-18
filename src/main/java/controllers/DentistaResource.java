@@ -8,6 +8,7 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+
 import java.sql.SQLException;
 
 @Path("/dentistas")
@@ -16,13 +17,17 @@ import java.sql.SQLException;
 public class DentistaResource {
 
     private DentistaDAO dao = new DentistaDAO();
+
     @Inject
     Mailer mailer;
 
     @POST
     public Response cadastrarDentista(Dentista novoDentista) {
         try {
+            // 1. Salva no banco (agora sem o email, apenas os dados vitais)
             dao.salvar(novoDentista);
+
+            // 2. Usa o e-mail em memória para mandar o convite via Quarkus Mailer
             String link = "http://localhost:5173/definir-senha?token=" + novoDentista.getEmail();
             String html = "<h3>Olá Dr(a). " + novoDentista.getNome() + ",</h3>" +
                     "<p>Seu cadastro na plataforma Vision foi realizado com sucesso!</p>" +
@@ -31,12 +36,15 @@ public class DentistaResource {
             mailer.send(Mail.withHtml(novoDentista.getEmail(), "Bem-vindo à Vision - Defina sua senha", html));
 
             return Response.status(Response.Status.CREATED).entity(novoDentista).build();
+
         } catch (SQLException e) {
+            e.printStackTrace();
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity("Erro no banco de dados Oracle ao salvar dentista: " + e.getMessage()).build();
+                    .entity("Erro no Oracle ao salvar dentista: " + e.getMessage()).build();
         } catch (Exception e) {
+            e.printStackTrace();
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity("Erro interno no servidor: " + e.getMessage()).build();
+                    .entity("Erro interno no servidor ao enviar e-mail: " + e.getMessage()).build();
         }
     }
 
@@ -55,7 +63,6 @@ public class DentistaResource {
         }
     }
 
-    //agenda
     @GET
     @Path("/{id}/agenda")
     public Response getAgenda(@PathParam("id") int idMedico) {
@@ -70,7 +77,6 @@ public class DentistaResource {
 
     @PUT
     @Path("/atendimento/{idAtendimento}")
-    @Consumes(jakarta.ws.rs.core.MediaType.APPLICATION_JSON)
     public Response atualizarAtendimento(@PathParam("idAtendimento") int idAtendimento, dto.AtualizarAtendimentoRequest req) {
         try {
             dao.AgendaDAO agendaDao = new dao.AgendaDAO();
@@ -81,5 +87,4 @@ public class DentistaResource {
                     .entity("Erro ao salvar atendimento: " + e.getMessage()).build();
         }
     }
-
 }

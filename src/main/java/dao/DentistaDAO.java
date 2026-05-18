@@ -12,6 +12,7 @@ import java.util.List;
 public class DentistaDAO {
 
     public void salvar(Dentista dentista) throws SQLException {
+        // Colocamos o ds_email de volta no SQL para o AuthDAO conseguir achar ele depois
         String sql = "INSERT INTO T_TDB_DENTISTA_VOLUNTARIO " +
                 "(id_medico, dt_hr_disponivel, nm_dentista, ds_especialidade, nr_cro, ds_consultorio_vinculado, st_status_dentista, id_consultorio, ds_email) " +
                 "VALUES (seq_dentista.NEXTVAL, SYSDATE, ?, ?, ?, ?, ?, ?, ?)";
@@ -22,11 +23,10 @@ public class DentistaDAO {
             stmt.setString(1, dentista.getNome());
             stmt.setString(2, dentista.getEspecialidade());
             stmt.setString(3, dentista.getCro());
-            stmt.setString(4, dentista.getConsultorioVinculado() != null ? dentista.getConsultorioVinculado() : "Matriz");
+            stmt.setString(4, dentista.getConsultorioVinculado() != null ? dentista.getConsultorioVinculado() : "Clínica Central de Testes");
             stmt.setString(5, dentista.getStatusDentista() != null ? dentista.getStatusDentista() : "ATIVO");
-            stmt.setInt(6, dentista.getIdConsultorio() > 0 ? dentista.getIdConsultorio() : 1);
-
-            stmt.setString(7, dentista.getEmail());
+            stmt.setInt(6, 999); // ID do consultório fantasma
+            stmt.setString(7, dentista.getEmail()); // O e-mail agora é salvo no banco!
 
             stmt.executeUpdate();
         }

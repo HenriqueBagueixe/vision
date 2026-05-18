@@ -8,7 +8,11 @@ public class PacientePainelDTO {
     private String status;
     private String observacao;
     private int idAtendimento;
+    private int idade;
+    private String escola;
+    private String programa;
 
+    
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
     public String getNome() { return nome; }
@@ -23,4 +27,10 @@ public class PacientePainelDTO {
     public void setObservacao(String observacao) { this.observacao = observacao; }
     public int getIdAtendimento() { return idAtendimento; }
     public void setIdAtendimento(int idAtendimento) { this.idAtendimento = idAtendimento; }
+    public int getIdade() { return idade; }
+    public void setIdade(int idade) { this.idade = idade; }
+    public String getEscola() { return escola; }
+    public void setEscola(String escola) { this.escola = escola; }
+    public String getPrograma() { return programa; }
+    public void setPrograma(String programa) { this.programa = programa; }
 }
