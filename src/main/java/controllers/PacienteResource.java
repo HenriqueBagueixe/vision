@@ -2,10 +2,13 @@ package controllers;
 
 import dao.PacienteDAO;
 import entities.Paciente;
+import jakarta.inject.Inject;
 import services.PacienteService;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+
+import javax.swing.*;
 import java.util.List;
 
 @Path("/pacientes")
@@ -13,7 +16,9 @@ import java.util.List;
 @Consumes(MediaType.APPLICATION_JSON)
 public class PacienteResource {
 
-    private PacienteDAO dao = new PacienteDAO();
+    @Inject
+    PacienteDAO dao;
+    
     private PacienteService service = new PacienteService();
 
     @GET
