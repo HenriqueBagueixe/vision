@@ -12,7 +12,7 @@ COPY src src
 
 RUN ./gradlew build -Dquarkus.package.type=fast-jar -x test
 
-FROM eclipse-temurin:17-jre-alpine
+FROM eclipse-temurin:21-jre-alpine
 WORKDIR /work/
 
 COPY --from=build /app/build/quarkus-app/lib/ /work/lib/
