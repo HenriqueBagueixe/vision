@@ -3,6 +3,7 @@ package dao;
 import dto.FuncionarioDTO;
 import entities.Funcionario;
 import factory.ConnectionFactory;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -11,38 +12,45 @@ import java.sql.SQLException;
 public class FuncionarioDAO {
 
     public void salvar(Funcionario funcionario) throws SQLException {
-        String sql = "INSERT INTO T_VISION_FUNCIONARIO (nm_nome, nm_sobrenome, ds_cargo, ds_email, ds_tipo_acesso) " +
-                "VALUES (?, ?, ?, ?, ?)";
+        String sqlId = "SELECT NVL(MAX(id_funcionario), 0) + 1 FROM T_TDB_CADASTRO_FUNCIONARIO";
+        String sqlInsert = "INSERT INTO T_TDB_CADASTRO_FUNCIONARIO " +
+                "(id_funcionario, nm_funcionario, email_funcionario, st_status_funcionario, ds_cargo_funcao, id_projeto) " +
+                "VALUES (?, ?, ?, 'ATIVO', ?, 1)";
 
-        try (Connection conn = ConnectionFactory.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            stmt.setString(1, funcionario.getNome());
-            stmt.setString(2, funcionario.getSobrenome());
-            stmt.setString(3, funcionario.getCargo());
-            stmt.setString(4, funcionario.getEmail());
-            stmt.setString(5, funcionario.getTipoAcesso() != null ? funcionario.getTipoAcesso() : "Administrador");
-
-            stmt.executeUpdate();
+        try (Connection conn = ConnectionFactory.getConnection()) {
+            int proximoId = 1;
+            try (PreparedStatement stmtId = conn.prepareStatement(sqlId);
+                 ResultSet rsId = stmtId.executeQuery()) {
+                if (rsId.next()) {
+                    proximoId = rsId.getInt(1);
+                }
+            }
+            try (PreparedStatement stmt = conn.prepareStatement(sqlInsert)) {
+                stmt.setInt(1, proximoId);
+                stmt.setString(2, funcionario.getNome() + " " + funcionario.getSobrenome());
+                stmt.setString(3, funcionario.getEmail());
+                stmt.setString(4, funcionario.getCargo());
+                stmt.executeUpdate();
+            }
         }
     }
 
     public FuncionarioDTO buscarPorId(int id) throws Exception {
-        String sql = "SELECT id_funcionario, nm_nome, nm_sobrenome, ds_email FROM T_VISION_FUNCIONARIO WHERE id_funcionario = ?";
+        String sql = "SELECT id_funcionario, nm_funcionario, email_funcionario FROM T_TDB_CADASTRO_FUNCIONARIO WHERE id_funcionario = ?";
+
 
         try (Connection conn = ConnectionFactory.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-
             stmt.setInt(1, id);
 
+            
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     FuncionarioDTO dto = new FuncionarioDTO();
                     dto.setId(rs.getInt("id_funcionario"));
-                    String nomeCompleto = rs.getString("nm_nome") + " " + rs.getString("nm_sobrenome");
-                    dto.setNome(nomeCompleto);
-
-                    dto.setEmail(rs.getString("ds_email"));
+                    dto.setNome(rs.getString("nm_funcionario"));
+                    dto.setEmail(rs.getString("email_funcionario"));
                     return dto;
                 }
             }

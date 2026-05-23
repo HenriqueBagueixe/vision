@@ -1,7 +1,6 @@
 package controllers;
 
 import dao.PacienteDAO;
-import entities.Genero;
 import entities.Paciente;
 import services.PacienteService;
 import jakarta.ws.rs.*;
@@ -26,16 +25,18 @@ public class PacienteResource {
     @POST
     public Response cadastrarPaciente(Paciente novoPaciente) {
         try {
-            //segurança preenchimento automatico
-            if (novoPaciente.getStatus() == null) novoPaciente.setStatus("Sem dentista");
+            if (novoPaciente.getStatus() == null || novoPaciente.getStatus().trim().isEmpty()) {
+                novoPaciente.setStatus("Sem dentista");
+            }
+
             if (novoPaciente.getPrograma() == null) novoPaciente.setPrograma("apolonias");
             if (novoPaciente.getEscola() == null || novoPaciente.getEscola().isEmpty())
                 novoPaciente.setEscola("Cadastro Externo");
             if (novoPaciente.getGenero() == null) novoPaciente.setGenero(entities.Genero.FEMININO);
+
             double rendaBruta = novoPaciente.getRendaBrutaTotal() > 0 ? novoPaciente.getRendaBrutaTotal() : 3000.00;
             int membrosFamilia = 1;
             int gravidade = 5;
-            //novoPaciente.setIdHistorico(1);
 
             service.cadastrarEProcessarPaciente(novoPaciente, rendaBruta, membrosFamilia, gravidade);
             return Response.status(Response.Status.CREATED).entity(novoPaciente).build();
@@ -45,11 +46,6 @@ public class PacienteResource {
             e.printStackTrace();
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Erro no servidor: " + e.getMessage()).build();
         }
-    }
-
-    @OPTIONS
-    public Response preflight() {
-        return Response.ok().build();
     }
 
     @PUT
@@ -62,8 +58,6 @@ public class PacienteResource {
             }
 
             pacienteAtualizado.setId(id);
-            pacienteAtualizado.setIdHistorico(1);
-
             dao.atualizar(pacienteAtualizado);
             return Response.ok(pacienteAtualizado).build();
         } catch (Exception e) {
@@ -89,20 +83,30 @@ public class PacienteResource {
         }
     }
 
-    //agenda
     @GET
     @Path("/agenda-geral")
     public Response getAgendaGeral() {
         try {
-            dao.AgendaDAO dao = new dao.AgendaDAO();
-            return Response.ok(dao.buscarAgendaGeralAdmin()).build();
+            dao.AgendaDAO agendaDao = new dao.AgendaDAO();
+            return Response.ok(agendaDao.buscarAgendaGeralAdmin()).build();
         } catch (Exception e) {
             e.printStackTrace();
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
         }
     }
 
-    //
+    @POST
+    @Path("/{id}/novo-agendamento")
+    public Response criarNovoAgendamento(@PathParam("id") int idPaciente, dto.NovoAgendamentoRequest req) {
+        try {
+            dao.criarNovoAgendamento(idPaciente, req);
+            return Response.status(Response.Status.CREATED).entity("Novo agendamento salvo com sucesso.").build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Erro ao criar agendamento no histórico: " + e.getMessage()).build();
+        }
+    }
 
     @GET
     @Path("/painel-admin")
@@ -143,7 +147,7 @@ public class PacienteResource {
             dao.marcarConsulta(idAtendimento, dataHora);
             return Response.ok("Consulta agendada com sucesso.").build();
         } catch (Exception e) {
-            e.printStackTrace(); // Isso vai imprimir o ERRO REAL no terminal do seu IntelliJ
+            e.printStackTrace();
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                     .entity("Erro ao agendar consulta: " + e.getMessage())
                     .header("Access-Control-Allow-Origin", "*")
@@ -151,14 +155,15 @@ public class PacienteResource {
                     .build();
         }
     }
-
-    @OPTIONS
-    @Path("/{idAtendimento}/marcar-consulta")
-    public Response preflightMarcarConsulta() {
-        return Response.ok()
-                .header("Access-Control-Allow-Origin", "*")
-                .header("Access-Control-Allow-Methods", "PUT, OPTIONS")
-                .header("Access-Control-Allow-Headers", "accept, authorization, content-type, x-requested-with")
-                .build();
+    @PUT
+    @Path("/{id}/aprovar")
+    public Response aprovarPaciente(@PathParam("id") int id) {
+        try {
+            dao.aprovarPaciente(id);
+            return Response.ok("Paciente aprovado para o fluxo principal.").build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Erro ao aprovar: " + e.getMessage()).build();
+        }
     }
 }

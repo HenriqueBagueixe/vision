@@ -12,8 +12,7 @@ public class AuthDAO {
         Integer idFuncionario = null;
         Integer idDentista = null;
 
-        // 1. Procura na tabela de Funcionários
-        String sqlBuscaFunc = "SELECT id_funcionario FROM T_VISION_FUNCIONARIO WHERE ds_email = ?";
+        String sqlBuscaFunc = "SELECT id_funcionario FROM T_TDB_CADASTRO_FUNCIONARIO WHERE email_funcionario = ?";
         try (Connection conn = ConnectionFactory.getConnection();
              PreparedStatement stmtBuscaFunc = conn.prepareStatement(sqlBuscaFunc)) {
             stmtBuscaFunc.setString(1, emailToken);
@@ -22,7 +21,6 @@ public class AuthDAO {
             }
         }
 
-        // 2. Se não achar, procura na tabela de Dentistas
         if (idFuncionario == null) {
             String sqlBuscaDentista = "SELECT id_medico FROM T_TDB_DENTISTA_VOLUNTARIO WHERE ds_email = ?";
             try (Connection conn = ConnectionFactory.getConnection();
@@ -35,25 +33,45 @@ public class AuthDAO {
         }
 
         if (idFuncionario == null && idDentista == null) {
-            throw new Exception("Usuário não encontrado com o e-mail fornecido.");
+            throw new Exception("Usuário não encontrado com o e-mail fornecido. O token é inválido.");
         }
 
-        String sqlInsert = "INSERT INTO T_TDB_LOGIN (id_usuario, ds_login, ds_senha, id_funcionario, id_dentista) " +
-                "VALUES (seq_login.NEXTVAL, ?, ?, ?, ?)";
-
+        boolean loginExiste = false;
+        String sqlVerifica = "SELECT id_usuario FROM T_TDB_LOGIN WHERE id_funcionario = ? OR id_dentista = ?";
         try (Connection conn = ConnectionFactory.getConnection();
-             PreparedStatement stmtInsert = conn.prepareStatement(sqlInsert)) {
+             PreparedStatement stmtVerifica = conn.prepareStatement(sqlVerifica)) {
 
-            stmtInsert.setString(1, emailToken);
-            stmtInsert.setString(2, senha);
+            if (idFuncionario != null) stmtVerifica.setInt(1, idFuncionario);
+            else stmtVerifica.setNull(1, Types.INTEGER);
 
-            if (idFuncionario != null) stmtInsert.setInt(3, idFuncionario);
-            else stmtInsert.setNull(3, Types.INTEGER);
+            if (idDentista != null) stmtVerifica.setInt(2, idDentista);
+            else stmtVerifica.setNull(2, Types.INTEGER);
 
-            if (idDentista != null) stmtInsert.setInt(4, idDentista);
-            else stmtInsert.setNull(4, Types.INTEGER);
+            try (ResultSet rsVerifica = stmtVerifica.executeQuery()) {
+                if (rsVerifica.next()) loginExiste = true;
+            }
+        }
 
-            stmtInsert.executeUpdate();
+        if (loginExiste) {
+            String sqlUpdate = "UPDATE T_TDB_LOGIN SET ds_senha = ? WHERE id_funcionario = ? OR id_dentista = ?";
+            try (Connection conn = ConnectionFactory.getConnection();
+                 PreparedStatement stmtUpdate = conn.prepareStatement(sqlUpdate)) {
+                stmtUpdate.setString(1, senha);
+                if (idFuncionario != null) stmtUpdate.setInt(2, idFuncionario); else stmtUpdate.setNull(2, Types.INTEGER);
+                if (idDentista != null) stmtUpdate.setInt(3, idDentista); else stmtUpdate.setNull(3, Types.INTEGER);
+                stmtUpdate.executeUpdate();
+            }
+        } else {
+            String sqlInsert = "INSERT INTO T_TDB_LOGIN (id_usuario, ds_login, ds_senha, id_funcionario, id_dentista) " +
+                    "VALUES (seq_login.NEXTVAL, ?, ?, ?, ?)";
+            try (Connection conn = ConnectionFactory.getConnection();
+                 PreparedStatement stmtInsert = conn.prepareStatement(sqlInsert)) {
+                stmtInsert.setString(1, emailToken);
+                stmtInsert.setString(2, senha);
+                if (idFuncionario != null) stmtInsert.setInt(3, idFuncionario); else stmtInsert.setNull(3, Types.INTEGER);
+                if (idDentista != null) stmtInsert.setInt(4, idDentista); else stmtInsert.setNull(4, Types.INTEGER);
+                stmtInsert.executeUpdate();
+            }
         }
     }
 
@@ -67,7 +85,6 @@ public class AuthDAO {
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    // Retorna um JSON formatado exatamente como o React espera ler
                     if (rs.getObject("id_dentista") != null) {
                         return "{\"tipoAcesso\": \"DENTISTA\", \"id\": " + rs.getInt("id_dentista") + "}";
                     }

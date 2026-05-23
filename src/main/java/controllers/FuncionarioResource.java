@@ -23,30 +23,25 @@ public class FuncionarioResource {
     @POST
     public Response cadastrarFuncionario(Funcionario novoFuncionario) {
         try {
-            dao.salvar(novoFuncionario);
             String link = "http://localhost:5173/definir-senha?token=" + novoFuncionario.getEmail();
             String texto = "Olá " + novoFuncionario.getNome() + ",\n\n" +
                     "Seu cadastro na plataforma Vision foi realizado com sucesso!\n" +
                     "Para acessar o sistema, você precisa definir uma senha de segurança.\n\n" +
                     "Clique no link abaixo para criar sua senha:\n" +
                     link;
+
             mailer.send(Mail.withText(novoFuncionario.getEmail(), "Bem-vindo à Vision - Defina sua senha", texto));
+            dao.salvar(novoFuncionario);
+
             return Response.status(Response.Status.CREATED).entity(novoFuncionario).build();
 
-
-        } catch (SQLException e) {
+        } catch (java.sql.SQLException e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                     .entity("Erro no banco de dados Oracle: " + e.getMessage()).build();
-
         } catch (Exception e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity("Erro interno no servidor: " + e.getMessage()).build();
+                    .entity("Erro interno (Falha de e-mail ou sistema): " + e.getMessage()).build();
         }
-    }
-
-    @OPTIONS
-    public Response preflight() {
-        return Response.ok().build();
     }
 
     @GET

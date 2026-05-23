@@ -12,7 +12,6 @@ import java.util.List;
 public class DentistaDAO {
 
     public void salvar(Dentista dentista) throws SQLException {
-        // Colocamos o ds_email de volta no SQL para o AuthDAO conseguir achar ele depois
         String sql = "INSERT INTO T_TDB_DENTISTA_VOLUNTARIO " +
                 "(id_medico, dt_hr_disponivel, nm_dentista, ds_especialidade, nr_cro, ds_consultorio_vinculado, st_status_dentista, id_consultorio, ds_email) " +
                 "VALUES (seq_dentista.NEXTVAL, SYSDATE, ?, ?, ?, ?, ?, ?, ?)";

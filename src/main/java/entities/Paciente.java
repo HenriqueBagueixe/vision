@@ -13,6 +13,7 @@ public class Paciente extends Pessoa{
     private String escola;
     private String status;
     private String programa;
+    private String email;
 
     public Paciente() {
     }
@@ -102,8 +103,13 @@ public class Paciente extends Pessoa{
     public String getPrograma() {
         return programa;
     }
-
     public void setPrograma(String programa) {
         this.programa = programa;
+    }
+    public String getEmail() {
+        return email;
+    }
+    public void setEmail(String email) {
+        this.email = email;
     }
 }

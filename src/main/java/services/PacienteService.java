@@ -17,18 +17,12 @@ public class PacienteService {
                 throw new IllegalArgumentException("O programa Dentistas do Bem é exclusivo para menores de 18 anos.");
             }
         }
-
-        paciente.setStatus("Sem dentista");
-
         paciente.setRendaBrutaTotal(rendaBrutaTotal);
         paciente.setGravidadeDentaria(gravidadeDentaria);
-
         calcularRegistrarRendaMedia(paciente, rendaBrutaTotal, totalMembrosRenda);
         gerarScore(paciente, gravidadeDentaria, paciente.getGenero().name(), paciente.getIdade());
-
         pacienteDAO.cadastrar(paciente);
     }
-
     public void calcularRegistrarRendaMedia(Paciente paciente, double rendaBrutaTotal, int totalMembrosRenda){
         double rendaPerCapta = (totalMembrosRenda > 0) ? (rendaBrutaTotal / totalMembrosRenda) : 0;
         paciente.setRendaMedia(rendaPerCapta);

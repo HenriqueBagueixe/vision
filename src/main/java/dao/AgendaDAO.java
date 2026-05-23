@@ -18,8 +18,8 @@ public class AgendaDAO {
                 "p.nm_paciente, p.gravidade_dentaria, d.nm_dentista " +
                 "FROM T_TDB_ATENDIMENTO a " +
                 "INNER JOIN T_TDB_TRIAGEM_HISTORICO h ON h.id_atendimento = a.id_atendimento " +
-                "INNER JOIN T_TDB_PACIENTE p ON p.id_historico = h.id_historico " +
-                "INNER JOIN T_TDB_DENTISTA_VOLUNTARIO d ON d.id_medico = a.id_medico " +
+                "INNER JOIN T_TDB_PACIENTE p ON p.id_paciente = h.id_paciente " +
+                "LEFT JOIN T_TDB_DENTISTA_VOLUNTARIO d ON d.id_medico = a.id_medico " +
                 "WHERE a.id_medico = ? " +
                 "ORDER BY a.dt_hr_atendimento ASC";
 
@@ -54,8 +54,8 @@ public class AgendaDAO {
                 "p.nm_paciente, p.gravidade_dentaria, d.nm_dentista " +
                 "FROM T_TDB_ATENDIMENTO a " +
                 "INNER JOIN T_TDB_TRIAGEM_HISTORICO h ON h.id_atendimento = a.id_atendimento " +
-                "INNER JOIN T_TDB_PACIENTE p ON p.id_historico = h.id_historico " +
-                "INNER JOIN T_TDB_DENTISTA_VOLUNTARIO d ON d.id_medico = a.id_medico " +
+                "INNER JOIN T_TDB_PACIENTE p ON p.id_paciente = h.id_paciente " +
+                "LEFT JOIN T_TDB_DENTISTA_VOLUNTARIO d ON d.id_medico = a.id_medico " +
                 "ORDER BY a.dt_hr_atendimento ASC";
 
         try (Connection conn = ConnectionFactory.getConnection();
@@ -71,13 +71,11 @@ public class AgendaDAO {
                 dto.setGravidade(rs.getInt("gravidade_dentaria"));
                 dto.setObservacao(rs.getString("ds_descricao_procedimento"));
                 dto.setNomeDentista(rs.getString("nm_dentista"));
-
                 agenda.add(dto);
             }
         }
         return agenda;
     }
-
     public void atualizarStatusAtendimento(int idAtendimento, String novoStatus, String descricao) throws Exception {
         String sql = "UPDATE T_TDB_ATENDIMENTO SET st_status_atendimento = ?, ds_descricao_procedimento = ? WHERE id_atendimento = ?";
 
