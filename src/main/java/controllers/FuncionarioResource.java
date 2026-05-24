@@ -9,14 +9,15 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import java.sql.SQLException;
 
 @Path("/funcionarios")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class FuncionarioResource {
 
-    private FuncionarioDAO dao = new FuncionarioDAO();
+    @Inject
+    FuncionarioDAO dao;
+
     @Inject
     Mailer mailer;
 

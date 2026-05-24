@@ -1,6 +1,7 @@
 package controllers;
 
 import dao.PacienteDAO;
+import dao.AgendaDAO;
 import entities.Paciente;
 import jakarta.inject.Inject;
 import services.PacienteService;
@@ -8,7 +9,6 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
-import javax.swing.*;
 import java.util.List;
 
 @Path("/pacientes")
@@ -18,8 +18,11 @@ public class PacienteResource {
 
     @Inject
     PacienteDAO dao;
-    
-    private PacienteService service = new PacienteService();
+
+    @Inject
+    PacienteService service;
+    @Inject
+    AgendaDAO agendaDao;
 
     @GET
     public Response listarPacientes() {
@@ -92,7 +95,6 @@ public class PacienteResource {
     @Path("/agenda-geral")
     public Response getAgendaGeral() {
         try {
-            dao.AgendaDAO agendaDao = new dao.AgendaDAO();
             return Response.ok(agendaDao.buscarAgendaGeralAdmin()).build();
         } catch (Exception e) {
             e.printStackTrace();
@@ -160,6 +162,7 @@ public class PacienteResource {
                     .build();
         }
     }
+
     @PUT
     @Path("/{id}/aprovar")
     public Response aprovarPaciente(@PathParam("id") int id) {

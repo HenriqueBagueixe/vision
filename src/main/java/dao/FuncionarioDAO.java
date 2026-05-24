@@ -2,14 +2,19 @@ package dao;
 
 import dto.FuncionarioDTO;
 import entities.Funcionario;
-import factory.ConnectionFactory;
-
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+@ApplicationScoped
 public class FuncionarioDAO {
+
+    @Inject
+    DataSource dataSource;
 
     public void salvar(Funcionario funcionario) throws SQLException {
         String sqlId = "SELECT NVL(MAX(id_funcionario), 0) + 1 FROM T_TDB_CADASTRO_FUNCIONARIO";
@@ -17,8 +22,7 @@ public class FuncionarioDAO {
                 "(id_funcionario, nm_funcionario, email_funcionario, st_status_funcionario, ds_cargo_funcao, id_projeto) " +
                 "VALUES (?, ?, ?, 'ATIVO', ?, 1)";
 
-
-        try (Connection conn = ConnectionFactory.getConnection()) {
+        try (Connection conn = dataSource.getConnection()) {
             int proximoId = 1;
             try (PreparedStatement stmtId = conn.prepareStatement(sqlId);
                  ResultSet rsId = stmtId.executeQuery()) {
@@ -38,13 +42,10 @@ public class FuncionarioDAO {
 
     public FuncionarioDTO buscarPorId(int id) throws Exception {
         String sql = "SELECT id_funcionario, nm_funcionario, email_funcionario FROM T_TDB_CADASTRO_FUNCIONARIO WHERE id_funcionario = ?";
-
-
-        try (Connection conn = ConnectionFactory.getConnection();
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, id);
 
-            
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     FuncionarioDTO dto = new FuncionarioDTO();

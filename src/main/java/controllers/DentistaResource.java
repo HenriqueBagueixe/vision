@@ -1,6 +1,7 @@
 package controllers;
 
 import dao.DentistaDAO;
+import dao.AgendaDAO;
 import entities.Dentista;
 import io.quarkus.mailer.Mail;
 import io.quarkus.mailer.Mailer;
@@ -14,11 +15,13 @@ import java.sql.SQLException;
 @Path("/dentistas")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-
-
 public class DentistaResource {
 
-    private DentistaDAO dao = new DentistaDAO();
+    @Inject
+    DentistaDAO dao;
+
+    @Inject
+    AgendaDAO agendaDao;
 
     @Inject
     Mailer mailer;
@@ -58,7 +61,6 @@ public class DentistaResource {
     @Path("/{id}/agenda")
     public Response getAgenda(@PathParam("id") int idMedico) {
         try {
-            dao.AgendaDAO agendaDao = new dao.AgendaDAO();
             return Response.ok(agendaDao.buscarAgendaDoDentista(idMedico)).build();
         } catch (Exception e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
@@ -70,7 +72,6 @@ public class DentistaResource {
     @Path("/atendimento/{idAtendimento}")
     public Response atualizarAtendimento(@PathParam("idAtendimento") int idAtendimento, dto.AtualizarAtendimentoRequest req) {
         try {
-            dao.AgendaDAO agendaDao = new dao.AgendaDAO();
             agendaDao.atualizarStatusAtendimento(idAtendimento, req.status, req.descricao);
             return Response.ok().entity("Atendimento atualizado com sucesso!").build();
         } catch (Exception e) {
