@@ -22,7 +22,7 @@ Baixe o código-fonte e abra a pasta raiz na sua IDE. Aguarde o Maven sincroniza
 **2. Configure o acesso ao Oracle**
 Vá no arquivo `src/main/resources/application.properties` e insira as credenciais do banco. Sem isso, a aplicação aborta a inicialização por falha no Agroal (pool de conexões).
 
-```properties
+properties
 quarkus.datasource.jdbc.url=jdbc:oracle:thin:@oracle.fiap.com.br:1521:ORCL
 quarkus.datasource.username=SEU_RM_AQUI
 quarkus.datasource.password=SUA_SENHA_AQUI
