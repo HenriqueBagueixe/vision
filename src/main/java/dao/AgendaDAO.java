@@ -1,15 +1,25 @@
 package dao;
 
-import dto.PacientePainelDTO;
 import dto.AgendaDTO;
-import factory.ConnectionFactory;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+@ApplicationScoped
 public class AgendaDAO {
+
+    @Inject
+    DataSource dataSource;
+
+    private Connection getConnection() throws SQLException {
+        return dataSource.getConnection();
+    }
 
     public List<AgendaDTO> buscarAgendaDoDentista(int idMedico) throws Exception {
         List<AgendaDTO> agenda = new ArrayList<>();
@@ -23,7 +33,7 @@ public class AgendaDAO {
                 "WHERE a.id_medico = ? " +
                 "ORDER BY a.dt_hr_atendimento ASC";
 
-        try (Connection conn = ConnectionFactory.getConnection();
+        try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, idMedico);
@@ -58,7 +68,7 @@ public class AgendaDAO {
                 "LEFT JOIN T_TDB_DENTISTA_VOLUNTARIO d ON d.id_medico = a.id_medico " +
                 "ORDER BY a.dt_hr_atendimento ASC";
 
-        try (Connection conn = ConnectionFactory.getConnection();
+        try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
@@ -76,10 +86,11 @@ public class AgendaDAO {
         }
         return agenda;
     }
+
     public void atualizarStatusAtendimento(int idAtendimento, String novoStatus, String descricao) throws Exception {
         String sql = "UPDATE T_TDB_ATENDIMENTO SET st_status_atendimento = ?, ds_descricao_procedimento = ? WHERE id_atendimento = ?";
 
-        try (Connection conn = factory.ConnectionFactory.getConnection();
+        try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, novoStatus);
             stmt.setString(2, descricao);

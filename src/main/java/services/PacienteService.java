@@ -2,14 +2,14 @@ package services;
 
 import dao.PacienteDAO;
 import entities.Paciente;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
+@ApplicationScoped
 public class PacienteService {
 
-    private final PacienteDAO pacienteDAO;
-
-    public PacienteService(){
-        this.pacienteDAO = new PacienteDAO();
-    }
+    @Inject
+    PacienteDAO pacienteDAO;
 
     public void cadastrarEProcessarPaciente(Paciente paciente, double rendaBrutaTotal, int totalMembrosRenda, int gravidadeDentaria){
         if (paciente.getPrograma() != null && paciente.getPrograma().equalsIgnoreCase("Dentistas do Bem")) {
@@ -23,6 +23,7 @@ public class PacienteService {
         gerarScore(paciente, gravidadeDentaria, paciente.getGenero().name(), paciente.getIdade());
         pacienteDAO.cadastrar(paciente);
     }
+
     public void calcularRegistrarRendaMedia(Paciente paciente, double rendaBrutaTotal, int totalMembrosRenda){
         double rendaPerCapta = (totalMembrosRenda > 0) ? (rendaBrutaTotal / totalMembrosRenda) : 0;
         paciente.setRendaMedia(rendaPerCapta);

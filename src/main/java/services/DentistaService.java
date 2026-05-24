@@ -1,11 +1,16 @@
 package services;
 
 import entities.Paciente;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
+@ApplicationScoped
 public class DentistaService {
-    private final PacienteService pacienteService = new PacienteService();
 
-    public  void definirGravidade(Paciente paciente, int gravidadeDefinida){
+    @Inject
+    PacienteService pacienteService;
+
+    public void definirGravidade(Paciente paciente, int gravidadeDefinida){
         if (gravidadeDefinida >= 1 && gravidadeDefinida <= 10){
             paciente.setGravidadeDentaria(gravidadeDefinida);
             int idade = paciente.getIdade();
