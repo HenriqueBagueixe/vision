@@ -1,68 +1,34 @@
-# vision
+# Backend Vision - Turma do Bem
 
-This project uses Quarkus, the Supersonic Subatomic Java Framework.
+## Sobre o projeto
+O Vision é uma API desenvolvida para gerenciar e automatizar a triagem de pacientes da ONG Turma do Bem. Construído em Java utilizando o framework Quarkus, o back-end orquestra as operações de três perfis: Pacientes, Dentistas Voluntários e Funcionários.
 
-If you want to learn more about Quarkus, please visit its website: <https://quarkus.io/>.
+A principal regra de negócio do sistema é a substituição da fila de espera por ordem de chegada por um sistema automatizado de Score. O algoritmo cruza dados de renda per capita, idade, gênero e gravidade clínica para calcular um peso e definir a prioridade real de atendimento. O sistema também barra automaticamente na origem cadastros que violam as regras dos programas sociais parceiros (como o limite de idade do programa Dentistas do Bem).
 
-## Running the application in dev mode
+---
+(Ou você pode acessar [ https://vision-tech-platform.vercel.app ]. O projeto já está in live com o render.
+## Como rodar o projeto localmente
 
-You can run your application in dev mode that enables live coding using:
+### Pré-requisitos
+* Java 17 ou superior
+* Maven
+* Acesso à rede ou VPN da FIAP (necessário para o banco Oracle responder)
 
-```shell script
-./gradlew quarkusDev
-```
+### Passo a Passo
 
-> **_NOTE:_**  Quarkus now ships with a Dev UI, which is available in dev mode only at <http://localhost:8080/q/dev/>.
+**1. Clone o repositório**
+Baixe o código-fonte e abra a pasta raiz na sua IDE. Aguarde o Maven sincronizar e baixar as dependências.
 
-## Packaging and running the application
+**2. Configure o acesso ao Oracle**
+Vá no arquivo `src/main/resources/application.properties` e insira as credenciais do banco. Sem isso, a aplicação aborta a inicialização por falha no Agroal (pool de conexões).
 
-The application can be packaged using:
+```properties
+quarkus.datasource.jdbc.url=jdbc:oracle:thin:@oracle.fiap.com.br:1521:ORCL
+quarkus.datasource.username=SEU_RM_AQUI
+quarkus.datasource.password=SUA_SENHA_AQUI
 
-```shell script
-./gradlew build
-```
+**3. Teste de E-mail (Mock)**
+Para evitar crashes por bloqueio de porta SMTP na rede da faculdade ou local, a aplicação está com o serviço de e-mail mockado (quarkus.mailer.mock=true). As requisições de cadastro que disparam convites e senhas não vão travar, mas o link gerado pelo Quarkus Mailer será impresso apenas nos logs do console, em vez de enviado para uma caixa real.
 
-It produces the `quarkus-run.jar` file in the `build/quarkus-app/` directory.
-Be aware that it’s not an _über-jar_ as the dependencies are copied into the `build/quarkus-app/lib/` directory.
-
-The application is now runnable using `java -jar build/quarkus-app/quarkus-run.jar`.
-
-If you want to build an _über-jar_, execute the following command:
-
-```shell script
-./gradlew build -Dquarkus.package.jar.type=uber-jar
-```
-
-The application, packaged as an _über-jar_, is now runnable using `java -jar build/*-runner.jar`.
-
-## Creating a native executable
-
-You can create a native executable using:
-
-```shell script
-./gradlew build -Dquarkus.native.enabled=true
-```
-
-Or, if you don't have GraalVM installed, you can run the native executable build in a container using:
-
-```shell script
-./gradlew build -Dquarkus.native.enabled=true -Dquarkus.native.container-build=true
-```
-
-You can then execute your native executable with: `./build/vision-1.0-SNAPSHOT-runner`
-
-If you want to learn more about building native executables, please consult <https://quarkus.io/guides/gradle-tooling>.
-
-## Related Guides
-
-- REST Jackson ([guide](https://quarkus.io/guides/rest#json-serialisation)): Jackson serialization support for Quarkus
-  REST. This extension is not compatible with the quarkus-resteasy extension, or any of the extensions that depend on it
-- JDBC Driver - Oracle ([guide](https://quarkus.io/guides/datasource)): Connect to the Oracle database via JDBC
-
-## Provided Code
-
-### REST
-
-Easily start your REST Web Services
-
-[Related guide section...](https://quarkus.io/guides/getting-started-reactive#reactive-jax-rs-resources)
+**4. Inicie o servidor**
+Abra o terminal na pasta raiz do projeto e execute:
