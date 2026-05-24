@@ -34,7 +34,6 @@ public class DentistaDAO {
             stmt.executeUpdate();
         }
     }
-
     public List<Dentista> listar() throws SQLException {
         List<Dentista> dentistas = new ArrayList<>();
         String sql = "SELECT id_medico, nm_dentista FROM T_TDB_DENTISTA_VOLUNTARIO WHERE st_status_dentista = 'ATIVO'";

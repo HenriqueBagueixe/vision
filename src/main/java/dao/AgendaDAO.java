@@ -56,7 +56,6 @@ public class AgendaDAO {
         }
         return agenda;
     }
-
     public List<AgendaDTO> buscarAgendaGeralAdmin() throws Exception {
         List<AgendaDTO> agenda = new ArrayList<>();
         String sql = "SELECT a.id_atendimento, TO_CHAR(a.dt_hr_atendimento, 'DD/MM/YYYY HH24:MI') as data_formatada, " +
@@ -86,7 +85,6 @@ public class AgendaDAO {
         }
         return agenda;
     }
-
     public void atualizarStatusAtendimento(int idAtendimento, String novoStatus, String descricao) throws Exception {
         String sql = "UPDATE T_TDB_ATENDIMENTO SET st_status_atendimento = ?, ds_descricao_procedimento = ? WHERE id_atendimento = ?";
 

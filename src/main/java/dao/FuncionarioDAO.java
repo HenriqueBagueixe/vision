@@ -39,7 +39,6 @@ public class FuncionarioDAO {
             }
         }
     }
-
     public FuncionarioDTO buscarPorId(int id) throws Exception {
         String sql = "SELECT id_funcionario, nm_funcionario, email_funcionario FROM T_TDB_CADASTRO_FUNCIONARIO WHERE id_funcionario = ?";
         try (Connection conn = dataSource.getConnection();
